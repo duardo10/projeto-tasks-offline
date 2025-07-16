@@ -12,13 +12,20 @@ const TaskItem = ({
   getPriorityIcon,
   formatDate,
   isOverdue,
-  getDaysUntilDue
+  getDaysUntilDue,
+  getOverdueStatus,
+  getOverdueText
 }) => {
+  const overdueStatus = getOverdueStatus(task.dueDate);
+  
   return (
     <View style={[
       styles.taskItem,
-      isOverdue(task.dueDate) && styles.overdueTask,
-      getDaysUntilDue(task.dueDate) <= 1 && getDaysUntilDue(task.dueDate) >= 0 && !isOverdue(task.dueDate) && styles.urgentTask
+      task.completed && styles.completedTaskItem,
+      !task.completed && overdueStatus === 'overdue' && styles.overdueTask,
+      !task.completed && overdueStatus === 'due-today' && styles.dueTodayTask,
+      !task.completed && overdueStatus === 'due-soon' && styles.dueSoonTask,
+      !task.completed && overdueStatus === 'due-later' && styles.dueLaterTask
     ]}>
       <TouchableOpacity
         style={styles.taskContent}
@@ -48,9 +55,9 @@ const TaskItem = ({
               <Ionicons
                 name={getPriorityIcon(task.priority)}
                 size={16}
-                color={getPriorityColor(task.priority)}
+                color={task.completed ? '#2ed573' : getPriorityColor(task.priority)}
               />
-              <Text style={[styles.priorityText, { color: getPriorityColor(task.priority) }]}>
+              <Text style={[styles.priorityText, { color: task.completed ? '#2ed573' : getPriorityColor(task.priority) }]}>
                 {task.priority === 'high' ? 'Alta' : task.priority === 'medium' ? 'Média' : 'Baixa'}
               </Text>
             </TouchableOpacity>
@@ -60,17 +67,52 @@ const TaskItem = ({
                 style={styles.dateContainer}
                 onPress={() => onDatePress(task)}
               >
-                <Ionicons
-                  name="calendar-outline"
-                  size={16}
-                  color={isOverdue(task.dueDate) ? '#ff4757' : '#747d8c'}
-                />
-                <Text style={[
-                  styles.dateText,
-                  { color: isOverdue(task.dueDate) ? '#ff4757' : '#747d8c' }
-                ]}>
-                  {formatDate(task.dueDate)}
-                </Text>
+                {task.completed ? (
+                  <View style={styles.completedStatusContainer}>
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={16}
+                      color="#2ed573"
+                    />
+                    <Text style={styles.completedStatusText}>
+                      Concluída
+                    </Text>
+                  </View>
+                ) : (
+                  <>
+                    <Ionicons
+                      name={overdueStatus === 'overdue' ? 'warning' : 'calendar-outline'}
+                      size={16}
+                      color={
+                        overdueStatus === 'overdue' ? '#ff4757' :
+                        overdueStatus === 'due-today' ? '#ff4757' :
+                        overdueStatus === 'due-soon' ? '#ffa502' : '#3498db'
+                      }
+                    />
+                    <View style={styles.dateTextContainer}>
+                      <Text style={[
+                        styles.dateText,
+                        { 
+                          color: overdueStatus === 'overdue' ? '#ff4757' :
+                                 overdueStatus === 'due-today' ? '#ff4757' :
+                                 overdueStatus === 'due-soon' ? '#ffa502' : '#3498db'
+                        }
+                      ]}>
+                        {formatDate(task.dueDate)}
+                      </Text>
+                      <Text style={[
+                        styles.overdueText,
+                        { 
+                          color: overdueStatus === 'overdue' ? '#ff4757' :
+                                 overdueStatus === 'due-today' ? '#ff4757' :
+                                 overdueStatus === 'due-soon' ? '#ffa502' : '#3498db'
+                        }
+                      ]}>
+                        {getOverdueText(task.dueDate)}
+                      </Text>
+                    </View>
+                  </>
+                )}
               </TouchableOpacity>
             )}
           </View>
@@ -104,15 +146,31 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+  completedTaskItem: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#2ed573',
+    backgroundColor: '#fff',
+  },
   overdueTask: {
     borderLeftWidth: 4,
     borderLeftColor: '#ff4757',
-    backgroundColor: '#fff5f5',
+    backgroundColor: '#fff',
   },
-  urgentTask: {
+  dueTodayTask: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#ff4757',
+    backgroundColor: '#fff',
+  },
+
+  dueSoonTask: {
     borderLeftWidth: 4,
     borderLeftColor: '#ffa502',
-    backgroundColor: '#fffbf0',
+    backgroundColor: '#fff',
+  },
+  dueLaterTask: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#3498db',
+    backgroundColor: '#fff',
   },
   taskContent: {
     flex: 1,
@@ -154,10 +212,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 4,
   },
+  dateTextContainer: {
+    marginLeft: 4,
+  },
   dateText: {
     fontSize: 12,
-    marginLeft: 4,
     fontWeight: '500',
+  },
+  overdueText: {
+    fontSize: 10,
+    fontWeight: '400',
+    marginTop: 1,
+  },
+  completedStatusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0fff4',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#2ed573',
+  },
+  completedStatusText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#2ed573',
+    marginLeft: 4,
   },
   deleteButton: {
     padding: 8,

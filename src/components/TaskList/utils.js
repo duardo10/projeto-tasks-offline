@@ -95,4 +95,43 @@ export const sortTasks = (tasks) => {
     const bPriority = getPriorityWeight(b.priority);
     return bPriority - aPriority; // Prioridade alta primeiro
   });
+};
+
+export const getOverdueStatus = (dueDate) => {
+  if (!dueDate) return 'no-date';
+  
+  const daysUntilDue = getDaysUntilDue(dueDate);
+  
+  if (daysUntilDue < 0) {
+    return 'overdue';
+  } else if (daysUntilDue === 0) {
+    return 'due-today';
+  } else if (daysUntilDue >= 1 && daysUntilDue <= 7) {
+    return 'due-soon'; // Tarefas da semana (amarelo)
+  } else if (daysUntilDue > 7 && daysUntilDue <= 30) {
+    return 'due-later'; // Tarefas do mês (cinza)
+  } else {
+    return 'due-later'; // Mais de um mês (cinza)
+  }
+};
+
+export const getOverdueText = (dueDate) => {
+  const status = getOverdueStatus(dueDate);
+  const daysUntilDue = getDaysUntilDue(dueDate);
+  
+  switch (status) {
+    case 'overdue':
+      const overdueDays = Math.abs(daysUntilDue);
+      return overdueDays === 1 ? 'Vencida há 1 dia' : `Vencida há ${overdueDays} dias`;
+    case 'due-today':
+      return 'Vence hoje';
+    case 'due-tomorrow':
+      return 'Vence amanhã';
+    case 'due-soon':
+      return `Vence em ${daysUntilDue} dias`;
+    case 'due-later':
+      return `Vence em ${daysUntilDue} dias`;
+    default:
+      return '';
+  }
 }; 

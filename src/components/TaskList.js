@@ -23,6 +23,8 @@ import {
   isOverdue,
   getDaysUntilDue,
   sortTasks,
+  getOverdueStatus,
+  getOverdueText,
 } from './TaskList/utils';
 
 const TaskList = () => {
@@ -32,21 +34,35 @@ const TaskList = () => {
       title: 'Estudar React Native', 
       completed: false, 
       priority: 'high',
-      dueDate: '2024-01-15'
+      dueDate: new Date().toISOString().split('T')[0]
     },
     { 
       id: '2', 
       title: 'Fazer exercícios', 
       completed: true, 
       priority: 'medium',
-      dueDate: '2024-01-10'
+      dueDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     },
     { 
       id: '3', 
       title: 'Ler documentação', 
       completed: false, 
       priority: 'low',
-      dueDate: '2024-01-20'
+      dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    },
+    { 
+      id: '4', 
+      title: 'Reunião importante', 
+      completed: false, 
+      priority: 'high',
+      dueDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    },
+    { 
+      id: '5', 
+      title: 'Tarefa vencida', 
+      completed: false, 
+      priority: 'medium',
+      dueDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     },
   ]);
   const [newTask, setNewTask] = useState('');
@@ -102,7 +118,7 @@ const TaskList = () => {
     );
   };
 
-  const updateTaskPriority = (id, priority) => {
+  const updateTaskPriority = (priority, id = null) => {
     if (isEditingNewTask) {
       setNewTaskPriority(priority);
       setIsEditingNewTask(false);
@@ -115,7 +131,7 @@ const TaskList = () => {
     setShowPriorityModal(false);
   };
 
-  const updateTaskDueDate = (id, dueDate) => {
+  const updateTaskDueDate = (dueDate, id = null) => {
     if (isEditingNewTask) {
       setNewTaskDueDate(dueDate);
       setIsEditingNewTask(false);
@@ -169,6 +185,8 @@ const TaskList = () => {
       formatDate={formatDate}
       isOverdue={isOverdue}
       getDaysUntilDue={getDaysUntilDue}
+      getOverdueStatus={getOverdueStatus}
+      getOverdueText={getOverdueText}
     />
   );
 
@@ -208,7 +226,7 @@ const TaskList = () => {
         <PriorityModal
           isVisible={showPriorityModal}
           onClose={closeModals}
-          onSelectPriority={updateTaskPriority}
+          onSelectPriority={(priority) => updateTaskPriority(priority, editingTask?.id)}
           getPriorityColor={getPriorityColor}
           getPriorityIcon={getPriorityIcon}
         />
@@ -216,7 +234,7 @@ const TaskList = () => {
         <DateModal
           isVisible={showDateModal}
           onClose={closeModals}
-          onSelectDate={updateTaskDueDate}
+          onSelectDate={(date) => updateTaskDueDate(date, editingTask?.id)}
           formatDate={formatDate}
         />
       </KeyboardAvoidingView>
